@@ -1,22 +1,20 @@
-# Stage 1: Build the native executable
-FROM ghcr.io/graalvm/graalvm-ce:latest AS build
+FROM ghcr.io/graalvm/native-image-community:22 AS build
 
 WORKDIR /app
 
 COPY . .
 
-RUN gu install native-image
+RUN chmod +x ./mvnw
 
 RUN ./mvnw -Pnative native:compile
 
-# Stage 2: Create the final image
 FROM alpine:latest
 
 RUN apk add --no-cache libstdc++ libc6-compat
 
 WORKDIR /app
 
-COPY --from=build /app/target/*-runner /app/application
+COPY --from=build /app/target/spring-native-simple /app/application
 
 EXPOSE 8080
 
